@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!resultsDiv) return;
         
         console.log('Iniciando renderização para query:', query);
-        resultsDiv.innerHTML = '<div class="text-center w-100"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Buscando...</span></div><br>Buscando jogos...</div>';
+            resultsDiv.innerHTML = '<div class="loading-spinner"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Buscando...</span></div><br><p class="mt-3">Buscando jogos...</p></div>';
         
         try {
             const jogos = await buscarJogosSteam(query);
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (jogos.length === 0) {
                 console.log('Nenhum jogo encontrado');
-                resultsDiv.innerHTML = '<div class="text-center w-100 text-muted">Nenhum jogo encontrado para "' + query + '".<br><small>Tente termos mais gerais como "witcher", "counter", "dota", etc.</small></div>';
+                resultsDiv.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><h3>Nenhum jogo encontrado</h3><p>Não encontramos jogos para "' + query + '".<br>Tente termos mais gerais como "witcher", "counter", "dota", etc.</p></div>';
                 return;
             }
             
@@ -86,13 +86,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 const imgUrl = `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/capsule_184x69.jpg`;
                 
                 const card = document.createElement('div');
-                card.className = 'card text-dark bg-light mb-3';
-                card.style.width = '14rem';
+                card.className = 'game-card';
                 card.innerHTML = `
                     <img src="${imgUrl}" class="card-img-top" alt="${name}" onerror="this.src='https://via.placeholder.com/184x69?text=Sem+Imagem'">
-                    <div class="card-body d-flex flex-column justify-content-between">
+                    <div class="card-body">
                         <h5 class="card-title">${name}</h5>
-                        <button class="btn btn-outline-danger mt-2" onclick="favoritarJogo(${appid}, '${name.replace(/'/g, "\\'")}')">Favoritar</button>
+                        <button class="btn btn-outline-danger" onclick="favoritarJogo(${appid}, '${name.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-heart me-2"></i>Favoritar
+                        </button>
                     </div>
                 `;
                 resultsDiv.appendChild(card);
@@ -124,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
         favDiv.innerHTML = '';
         
         if (favoritos.length === 0) {
-            favDiv.innerHTML = '<div class="text-center w-100 text-muted">Nenhum favorito ainda.<br><small>Adicione jogos aos favoritos na página inicial.</small></div>';
+            favDiv.innerHTML = '<div class="empty-state"><i class="fas fa-heart"></i><h3>Nenhum favorito ainda</h3><p>Adicione jogos aos favoritos na página inicial para vê-los aqui.</p></div>';
             return;
         }
         
@@ -134,13 +135,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const imgUrl = `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/capsule_184x69.jpg`;
             
             const card = document.createElement('div');
-            card.className = 'card text-dark bg-light mb-3';
-            card.style.width = '14rem';
+            card.className = 'game-card';
             card.innerHTML = `
                 <img src="${imgUrl}" class="card-img-top" alt="${name}" onerror="this.src='https://via.placeholder.com/184x69?text=Sem+Imagem'">
-                <div class="card-body d-flex flex-column justify-content-between">
+                <div class="card-body">
                     <h5 class="card-title">${name}</h5>
-                    <button class="btn btn-outline-secondary btn-sm mt-2" onclick="removerFavorito(${appid})">Remover</button>
+                    <button class="btn btn-outline-secondary" onclick="removerFavorito(${appid})">
+                        <i class="fas fa-trash me-2"></i>Remover
+                    </button>
                 </div>
             `;
             favDiv.appendChild(card);

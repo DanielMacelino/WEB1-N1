@@ -1,43 +1,283 @@
-/* Estilo para centralizar e dar transparência à tela de login */
-body {
-    min-height: 100vh;
-    background: linear-gradient(120deg, #232526 0%, #414345 100%);
-}
-.login-container {
-    max-width: 350px;
-    background: rgba(255,255,255,0.85);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.18);
+/* ===== VARIÁVEIS CSS ===== */
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --dark-color: #212529;
+    --light-color: #f8f9fa;
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-dark: linear-gradient(135deg, #232526 0%, #414345 100%);
+    --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
 
-/* Flexbox para resultados e favoritos */
-#results, #favoritosList {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1.5rem;
+/* ===== ESTILOS GERAIS ===== */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
 }
-.card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 250px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+
+/* ===== PÁGINA DE LOGIN ===== */
+.login-bg {
+    background: var(--gradient-dark);
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
 }
-.card-img-top {
+
+.login-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.1;
+}
+
+.login-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    z-index: 1;
+    transition: transform 0.3s ease;
+}
+
+.login-container:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+.login-form .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.login-form .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* ===== NAVBAR ===== */
+.bg-gradient-primary {
+    background: var(--gradient-primary) !important;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* ===== HERO SECTION ===== */
+.hero-section {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(108, 117, 125, 0.1) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search-form .input-group {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.search-form .input-group-text {
+    border: none;
+    background: var(--primary-color);
+}
+
+.search-form .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 0;
+    padding: 1rem;
+    font-size: 1.1rem;
+}
+
+.search-form .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: none;
+}
+
+.search-form .btn {
+    border-radius: 0 10px 10px 0;
+    padding: 1rem 2rem;
+    font-weight: 600;
+}
+
+/* ===== GRID DE JOGOS ===== */
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 2rem 0;
+}
+
+.game-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.game-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary-color);
+}
+
+.game-card .card-img-top {
+    height: 120px;
     object-fit: cover;
-    height: 69px;
-    width: 100%;
-    background: #eee;
+    transition: transform 0.3s ease;
 }
-/* Responsividade */
-@media (max-width: 600px) {
+
+.game-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.game-card .card-body {
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.game-card .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.game-card .btn {
+    border-radius: 25px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.game-card .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== LOADING E ESTADOS ===== */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* ===== FOOTER ===== */
+footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 768px) {
     .login-container {
-        padding: 2rem 1rem;
-        max-width: 95vw;
+        margin: 1rem;
+        padding: 2rem 1.5rem;
     }
-    .card {
-        width: 90vw !important;
+    
+    .games-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 1rem 0;
     }
+    
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+    
+    .search-form .input-group {
+        flex-direction: column;
+    }
+    
+    .search-form .input-group-text,
+    .search-form .form-control,
+    .search-form .btn {
+        border-radius: 10px !important;
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    .hero-section {
+        padding: 2rem 0 !important;
+    }
+    
+    .hero-section h1 {
+        font-size: 1.8rem;
+    }
+    
+    .game-card .card-body {
+        padding: 1rem;
+    }
+}
+
+/* ===== ANIMAÇÕES ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.game-card {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.game-card:nth-child(1) { animation-delay: 0.1s; }
+.game-card:nth-child(2) { animation-delay: 0.2s; }
+.game-card:nth-child(3) { animation-delay: 0.3s; }
+.game-card:nth-child(4) { animation-delay: 0.4s; }
+.game-card:nth-child(5) { animation-delay: 0.5s; }
+.game-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* ===== SCROLLBAR PERSONALIZADA ===== */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #0b5ed7;
 }
