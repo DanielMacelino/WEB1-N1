@@ -1,9 +1,38 @@
 document.addEventListener('DOMContentLoaded', function() {
     const loginBtn = document.getElementById('loginBtn');
+    const loginForm = document.querySelector('.login-form');
+    
     if (loginBtn) {
-        loginBtn.addEventListener('click', function() {
-            // Simplesmente redireciona para a Home
-            window.location.href = 'home.html';
+        loginBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Previne o comportamento padrão do formulário
+            
+            // Validação básica dos campos
+            const username = document.getElementById('username');
+            const password = document.getElementById('password');
+            
+            if (username && password) {
+                if (username.value.trim() === '' || password.value.trim() === '') {
+                    alert('Por favor, preencha todos os campos!');
+                    return;
+                }
+            }
+            
+            // Adiciona efeito visual de loading
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Entrando...';
+            loginBtn.disabled = true;
+            
+            // Simula um pequeno delay para mostrar o loading
+            setTimeout(() => {
+                window.location.href = 'home.html';
+            }, 1000);
+        });
+    }
+    
+    // Também adiciona listener para o formulário
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            loginBtn.click(); // Chama o mesmo comportamento do botão
         });
     }
 
