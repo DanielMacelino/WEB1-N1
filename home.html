@@ -39,15 +39,15 @@
                     </h1>
                     <p class="lead mb-5">Encontre e gerencie seus jogos favoritos da Steam</p>
                     
-                    <!-- Formulário de busca melhorado -->
+                    <!-- Formulário de busca -->
                     <form id="searchForm" class="search-form">
                         <div class="input-group input-group-lg">
                             <span class="input-group-text bg-primary text-white">
                                 <i class="fas fa-search"></i>
                             </span>
                             <input id="searchInput" class="form-control" type="search" 
-                                   placeholder="Digite o nome do jogo..." aria-label="Buscar">
-                            <button class="btn btn-primary" type="submit">
+                                placeholder="Digite o nome do jogo..." aria-label="Buscar">
+                            <button class="btn btn-primary" id="searchBtn" type="submit">
                                 <i class="fas fa-search me-2"></i>Buscar
                             </button>
                         </div>
@@ -58,9 +58,11 @@
     </section>
 
     <!-- Resultados -->
-    <main class="container flex-grow-1 py-4">
-        <div id="results" class="games-grid"></div>
-    </main>
+    <div id="loading" class="text-center text-muted hidden py-4">
+        <i class="fas fa-spinner fa-spin fa-2x"></i>
+        <p>Buscando jogos...</p>
+    </div>
+    <div id="results" class="games-grid"></div>
 
     <!-- Footer -->
     <footer class="bg-dark text-center py-3 mt-auto">
@@ -72,6 +74,6 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="script2.js"></script>
 </body>
 </html>
