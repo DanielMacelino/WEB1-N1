@@ -196,6 +196,10 @@ body {
     color: #6c757d;
 }
 
+.hidden {
+    display: none !important;
+}
+
 .empty-state i {
     font-size: 4rem;
     margin-bottom: 1rem;
