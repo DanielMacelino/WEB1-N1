@@ -29,14 +29,17 @@ function criarCardJogo(game) {
 }
 
 // buscar jogos na API IsThereAnyDeal
-async function buscarJogo(query, resultsDiv, loadingDiv) {
+async function buscarJogo(query, resultsDiv, loadingDiv) { 
+  //query : o que usuário digita ; resultsDiv : 
+
   const API_KEY = '2db55b86de202e21ba8f60d1783044d66c5d408c'; 
   const url = `https://api.isthereanydeal.com/games/search/v1?key=${API_KEY}&title=${encodeURIComponent(query)}&limit=6`;
 
   // helper: fetch com timeout e fallback de CORS proxies
-  async function fetchWithCors(urlToFetch, options = {}) {
+  async function fetchWithCors(urlToFetch, options = {}) { //mini-ferramenta que garante que a requisição funcione mesmo que o servidor bloqueie CORS.
+  // Cross-Origin Resource Sharing
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 10000); //timeout para abortar requisição caso ultrapasse 10s
     try {
       const res = await fetch(urlToFetch, { ...options, signal: controller.signal });
       clearTimeout(timeout);
@@ -44,7 +47,7 @@ async function buscarJogo(query, resultsDiv, loadingDiv) {
       throw new Error(`HTTP ${res.status}`);
     } catch (err) {
       clearTimeout(timeout);
-      // tentar proxies CORS
+      // tentar proxies alternativos
       const proxies = [
         (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
         (u) => `https://cors.isomorphic-git.org/${u}`,
@@ -73,7 +76,7 @@ async function buscarJogo(query, resultsDiv, loadingDiv) {
     console.log('[ITAD] Resposta bruta da busca:', raw);
 
     const items = Array.isArray(raw)
-      ? raw
+      ? raw //tentativa de extrair o array de itens da resposta que possam vir em formatos variados
       : (Array.isArray(raw?.list) ? raw.list
         : (Array.isArray(raw?.results) ? raw.results
           : (Array.isArray(raw?.data) ? raw.data : [])));
@@ -85,7 +88,7 @@ async function buscarJogo(query, resultsDiv, loadingDiv) {
 
     // buscar detalhes dos jogos
     const detailedGames = await Promise.all(
-      items.slice(0, 6).map(async (g) => {
+      items.slice(0, 6).map(async (g) => { //máx 6 promessas
         const gameId = g.id ?? g.gameID ?? g.plain ?? g.appid ?? g.app_id;
         const gameTitle = g.title ?? g.name ?? g.game ?? g.plain ?? `Jogo ${gameId}`;
         if (!gameId) {
@@ -98,21 +101,21 @@ async function buscarJogo(query, resultsDiv, loadingDiv) {
           const infoRaw = await infoRes.json();
           console.log('[ITAD] Info bruto para', gameId, infoRaw);
           const info = infoRaw?.data ?? infoRaw;
-          return {
+          return { //extrai infos e monta objeto final do jogo
             steam_appid: gameId,
             name: gameTitle,
             header_image: info?.assets?.banner || info?.assets?.boxart || info?.assets?.icon || '',
             release_date: info?.releaseDate || info?.release_date || info?.released || '',
             players_recent: info?.players?.recent ?? info?.players_recent ?? null,
           };
-        } catch (e) {
+        } catch (e) { //tratando falha do jogo específico para não quebrar a lista inteira
           console.warn('[ITAD] Falha ao obter info de', gameId, e);
           return { steam_appid: gameId, name: gameTitle, header_image: '' };
         }
       })
     );
 
-    resultsDiv.innerHTML = '';
+    resultsDiv.innerHTML = ''; 
     detailedGames.forEach((game) => resultsDiv.appendChild(criarCardJogo(game)));
   } catch (err) {
     console.error('Erro ao buscar jogos:', err);
@@ -151,7 +154,7 @@ async function buscarJogo(query, resultsDiv, loadingDiv) {
   }
 }
 
-// favoritar jogo (sem depender de appid numérico)
+// favoritar jogo (não depende de appid numérico)
 function favoritarJogo(appid, name, headerImage) {
   const normalizedAppid = Number(appid);
   const safeAppid = Number.isFinite(normalizedAppid) && normalizedAppid > 0 ? normalizedAppid : null;
@@ -176,11 +179,10 @@ function favoritarJogo(appid, name, headerImage) {
     alert('Este jogo já está nos favoritos.');
   }
 
-  // redireciona para a página de favoritos
-  //window.location.href = 'favoritos.html';
+  //window.location.href = 'favoritos.html'; //redirecionamento para a pág de favoritos
 }
 
-// renderizar lista de favoritos
+//renderizar lista de favoritos
 function renderizarFavoritos() {
   const favDiv = document.getElementById('favoritosList');
   if (!favDiv) {
@@ -188,6 +190,7 @@ function renderizarFavoritos() {
     return;
   }
 
+  //ler e validar favoritos
   console.log('Renderizando favoritos...');
   const favoritos = JSON.parse(localStorage.getItem('favoritosSteam') || '[]');
   console.log('Favoritos encontrados no localStorage:', favoritos);
@@ -296,7 +299,7 @@ function initFavoritosPage() {
   renderizarFavoritos();
 }
 
-// INICIALIZAÇÃO AUTOMÁTICA (detecta página atual)
+// INICIALIZAÇÃO AUTOMÁTICA (detecta página atual verificando a presença de elementos-chave)
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOMContentLoaded - Inicializando página...');

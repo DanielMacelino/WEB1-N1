@@ -230,7 +230,7 @@ footer {
     }
     
     .search-form .input-group {
-        flex-direction: column;
+        flex-direction: column; /* botão e campo empilhados no mobile */
     }
     
     .search-form .input-group-text,
@@ -297,5 +297,5 @@ footer {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #0b5ed7;
+    background: #b50bd7;
 }
