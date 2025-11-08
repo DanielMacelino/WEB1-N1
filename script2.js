@@ -1,316 +1,382 @@
-// cria um card de jogo
-function criarCardJogo(game) {
+// Configuração da API
+const API_KEY = '2db55b86de202e21ba8f60d1783044d66c5d408c';
+
+// Função para buscar com timeout e fallback de proxies CORS
+async function fetchComCors(url, timeout = 10000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (response.ok) return response;
+    throw new Error(`Erro HTTP: ${response.status}`);
+  } catch (erro) {
+    clearTimeout(timeoutId);
+    
+    // Tentar proxies CORS como fallback
+    const proxies = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+      `https://cors.isomorphic-git.org/${url}`
+    ];
+    
+    for (const proxyUrl of proxies) {
+      try {
+        const response = await fetch(proxyUrl);
+        if (response.ok) return response;
+      } catch (e) {
+        // Continua para o próximo proxy
+      }
+    }
+    throw erro;
+  }
+}
+
+// Criar card de jogo
+function criarCardJogo(jogo) {
   const card = document.createElement('div');
   card.className = 'game-card';
-
-  const img = game.header_image || 'https://placehold.co/460x215?text=Sem+Imagem';
-  const releaseDate = game.release_date
-    ? new Date(game.release_date).toLocaleDateString('pt-BR')
+  
+  const imagem = jogo.header_image || 'https://placehold.co/460x215?text=Sem+Imagem';
+  const dataLancamento = jogo.release_date 
+    ? new Date(jogo.release_date).toLocaleDateString('pt-BR')
     : 'Data indisponível';
-  const players = game.players_recent ? `👥 Jogadores recentes: ${game.players_recent.toLocaleString('pt-BR')}` : '';
-
+  const jogadoresRecentes = jogo.players_recent 
+    ? `👥 Jogadores recentes: ${jogo.players_recent.toLocaleString('pt-BR')}` 
+    : '';
+  
   card.innerHTML = `
-    <img src="${img}" alt="${game.name}" class="card-img-top"
+    <img src="${imagem}" 
+         alt="${jogo.name}" 
+         class="card-img-top"
          onerror="this.src='https://placehold.co/460x215?text=Imagem+Indisponível'">
     <div class="card-body">
-      <h5 class="card-title">${game.name}</h5>
-      <p>📅 ${releaseDate}</p>
-      <p>${players}</p>
+      <h5 class="card-title">${jogo.name}</h5>
+      <p>📅 ${dataLancamento}</p>
+      ${jogadoresRecentes ? `<p>${jogadoresRecentes}</p>` : ''}
     </div>
   `;
-
-  // cria botão sem usar inline onclick (evita problemas de aspas)
-  const btn = document.createElement('button');
-  btn.className = 'btn btn-outline-danger';
-  btn.innerHTML = '<i class="fas fa-heart me-2"></i>Favoritar';
-  btn.addEventListener('click', () => favoritarJogo(game.steam_appid, game.name, game.header_image));
-  card.querySelector('.card-body').appendChild(btn);
+  
+  // Criar botão de favoritar
+  const botaoFavoritar = document.createElement('button');
+  botaoFavoritar.className = 'btn btn-outline-danger';
+  botaoFavoritar.innerHTML = '<i class="fas fa-heart me-2"></i>Favoritar';
+  botaoFavoritar.addEventListener('click', () => {
+    favoritarJogo(jogo.steam_appid, jogo.name, jogo.header_image, jogo.release_date, jogo.players_recent);
+  });
+  
+  card.querySelector('.card-body').appendChild(botaoFavoritar);
   return card;
 }
 
-// buscar jogos na API IsThereAnyDeal
-async function buscarJogo(query, resultsDiv, loadingDiv) {
-  const API_KEY = '2db55b86de202e21ba8f60d1783044d66c5d408c'; 
-  const url = `https://api.isthereanydeal.com/games/search/v1?key=${API_KEY}&title=${encodeURIComponent(query)}&limit=6`;
-
-  // helper: fetch com timeout e fallback de CORS proxies
-  async function fetchWithCors(urlToFetch, options = {}) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
-    try {
-      const res = await fetch(urlToFetch, { ...options, signal: controller.signal });
-      clearTimeout(timeout);
-      if (res.ok) return res;
-      throw new Error(`HTTP ${res.status}`);
-    } catch (err) {
-      clearTimeout(timeout);
-      // tentar proxies CORS
-      const proxies = [
-        (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-        (u) => `https://cors.isomorphic-git.org/${u}`,
-      ];
-      for (const make of proxies) {
-        try {
-          const proxied = make(urlToFetch);
-          const res2 = await fetch(proxied, options);
-          if (res2.ok) return res2;
-        } catch (_) {
-          // tenta próximo proxy
-        }
-      }
-      throw err;
-    }
-  }
-
+// Buscar jogos na API IsThereAnyDeal
+async function buscarJogos(termo, resultsDiv, loadingDiv) {
+  const urlBusca = `https://api.isthereanydeal.com/games/search/v1?key=${API_KEY}&title=${encodeURIComponent(termo)}`;
+  
   resultsDiv.innerHTML = '';
   loadingDiv.classList.remove('hidden');
-
+  
   try {
-    const response = await fetchWithCors(url);
-    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-
-    const raw = await response.json();
-    console.log('[ITAD] Resposta bruta da busca:', raw);
-
-    const items = Array.isArray(raw)
-      ? raw
-      : (Array.isArray(raw?.list) ? raw.list
-        : (Array.isArray(raw?.results) ? raw.results
-          : (Array.isArray(raw?.data) ? raw.data : [])));
-
-    if (!Array.isArray(items) || items.length === 0) {
-      resultsDiv.innerHTML = `<div class="empty-state"><p>😕 Nenhum jogo encontrado</p></div>`;
+    const response = await fetchComCors(urlBusca);
+    const dados = await response.json();
+    
+    console.log('Resposta da busca:', dados);
+    
+    // Tratar diferentes formatos de resposta
+    const jogos = Array.isArray(dados) ? dados : 
+                  Array.isArray(dados?.list) ? dados.list :
+                  Array.isArray(dados?.results) ? dados.results :
+                  Array.isArray(dados?.data) ? dados.data : [];
+    
+    if (jogos.length === 0) {
+      resultsDiv.innerHTML = `
+        <div class="empty-state">
+          <p>😕 Nenhum jogo encontrado</p>
+        </div>
+      `;
       return;
     }
-
-    // buscar detalhes dos jogos
-    const detailedGames = await Promise.all(
-      items.slice(0, 6).map(async (g) => {
-        const gameId = g.id ?? g.gameID ?? g.plain ?? g.appid ?? g.app_id;
-        const gameTitle = g.title ?? g.name ?? g.game ?? g.plain ?? `Jogo ${gameId}`;
-        if (!gameId) {
-          return { steam_appid: 0, name: gameTitle, header_image: '' };
-        }
-        try {
-          const infoUrl = `https://api.isthereanydeal.com/games/info/v2?key=${API_KEY}&id=${gameId}`;
-          const infoRes = await fetchWithCors(infoUrl);
-          if (!infoRes.ok) throw new Error(`Info HTTP: ${infoRes.status}`);
-          const infoRaw = await infoRes.json();
-          console.log('[ITAD] Info bruto para', gameId, infoRaw);
-          const info = infoRaw?.data ?? infoRaw;
-          return {
-            steam_appid: gameId,
-            name: gameTitle,
-            header_image: info?.assets?.banner || info?.assets?.boxart || info?.assets?.icon || '',
-            release_date: info?.releaseDate || info?.release_date || info?.released || '',
-            players_recent: info?.players?.recent ?? info?.players_recent ?? null,
+    
+    // Buscar informações detalhadas de cada jogo
+    const jogosDetalhados = await Promise.all(
+      jogos.slice(0, 12).map(async (jogo) => {
+        const jogoId = jogo.id || jogo.gameID || jogo.plain;
+        const jogoNome = jogo.title || jogo.name || `Jogo ${jogoId}`;
+        
+        if (!jogoId) {
+          return { 
+            steam_appid: 0, 
+            name: jogoNome, 
+            header_image: '' 
           };
-        } catch (e) {
-          console.warn('[ITAD] Falha ao obter info de', gameId, e);
-          return { steam_appid: gameId, name: gameTitle, header_image: '' };
+        }
+        
+        try {
+          const urlInfo = `https://api.isthereanydeal.com/games/info/v2?key=${API_KEY}&id=${jogoId}`;
+          const responseInfo = await fetchComCors(urlInfo);
+          const dadosInfo = await responseInfo.json();
+          
+          console.log('Info do jogo:', jogoId, dadosInfo);
+          
+          const info = dadosInfo?.data || dadosInfo;
+          
+          return {
+            steam_appid: jogoId,
+            name: jogoNome,
+            header_image: info?.assets?.banner || info?.assets?.boxart || '',
+            release_date: info?.releaseDate || info?.release_date || '',
+            players_recent: info?.players?.recent || null
+          };
+        } catch (erro) {
+          console.warn('Erro ao buscar info do jogo:', jogoId, erro);
+          return { 
+            steam_appid: jogoId, 
+            name: jogoNome, 
+            header_image: '' 
+          };
         }
       })
     );
-
+    
     resultsDiv.innerHTML = '';
-    detailedGames.forEach((game) => resultsDiv.appendChild(criarCardJogo(game)));
-  } catch (err) {
-    console.error('Erro ao buscar jogos:', err);
-    // fallback para lista pública (xpaw) quando a API principal falhar/timeout
+    jogosDetalhados.forEach(jogo => {
+      resultsDiv.appendChild(criarCardJogo(jogo));
+    });
+    
+  } catch (erro) {
+    console.error('Erro ao buscar jogos:', erro);
+    
+    // Tentar fallback com API alternativa
     try {
-      console.warn('[Fallback] Tentando fonte pública xpaw...');
-      const xpawRes = await fetchWithCors('https://steamapi.xpaw.me/list.json');
-      if (!xpawRes.ok) throw new Error(`Fallback HTTP: ${xpawRes.status}`);
-      const xpawData = await xpawRes.json();
-      const filtered = Object.values(xpawData).filter((j) =>
-        j.name && j.name.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 6);
-
-      if (filtered.length === 0) {
-        resultsDiv.innerHTML = `<div class="empty-state"><p>😕 Nenhum jogo encontrado</p></div>`;
+      console.log('Tentando API alternativa...');
+      const response = await fetchComCors('https://steamapi.xpaw.me/list.json');
+      const dados = await response.json();
+      
+      const jogosFiltrados = Object.values(dados)
+        .filter(j => j.name && j.name.toLowerCase().includes(termo.toLowerCase()))
+        .slice(0, 6);
+      
+      if (jogosFiltrados.length === 0) {
+        resultsDiv.innerHTML = `
+          <div class="empty-state">
+            <p>😕 Nenhum jogo encontrado</p>
+          </div>
+        `;
         return;
       }
-
+      
       resultsDiv.innerHTML = '';
-      filtered.forEach((j) => {
-        const game = {
-          steam_appid: j.appid || j.app_id,
-          name: j.name || 'Nome não disponível',
-          header_image: `https://cdn.cloudflare.steamstatic.com/steam/apps/${j.appid || j.app_id}/capsule_616x353.jpg`,
+      jogosFiltrados.forEach(j => {
+        const jogo = {
+          steam_appid: j.appid,
+          name: j.name,
+          header_image: `https://cdn.cloudflare.steamstatic.com/steam/apps/${j.appid}/capsule_616x353.jpg`,
           release_date: '',
-          players_recent: null,
+          players_recent: null
         };
-        resultsDiv.appendChild(criarCardJogo(game));
+        resultsDiv.appendChild(criarCardJogo(jogo));
       });
-    } catch (fallbackErr) {
-      console.error('[Fallback] Falhou também:', fallbackErr);
-      resultsDiv.innerHTML = `<div class="empty-state"><p>❌ Erro ao buscar jogos</p></div>`;
+    } catch (erroFallback) {
+      console.error('Erro no fallback:', erroFallback);
+      resultsDiv.innerHTML = `
+        <div class="empty-state">
+          <p>❌ Erro ao buscar jogos</p>
+          <p>Tente novamente mais tarde</p>
+        </div>
+      `;
     }
   } finally {
     loadingDiv.classList.add('hidden');
   }
 }
 
-// favoritar jogo (sem depender de appid numérico)
-function favoritarJogo(appid, name, headerImage) {
-  const normalizedAppid = Number(appid);
-  const safeAppid = Number.isFinite(normalizedAppid) && normalizedAppid > 0 ? normalizedAppid : null;
-
-  console.log('Favoritando jogo:', { appid: safeAppid, name, headerImage });
-
+// Favoritar jogo (agora salva todas as informações)
+function favoritarJogo(appid, nome, imagem, dataLancamento, jogadoresRecentes) {
   let favoritos = JSON.parse(localStorage.getItem('favoritosSteam') || '[]');
-  console.log('Favoritos atuais:', favoritos);
-
-  const exists = favoritos.some((j) => {
-    const jApp = Number(j.appid);
-    if (safeAppid) return Number.isFinite(jApp) && jApp === safeAppid;
-    return (j.name || '').toLowerCase() === (name || '').toLowerCase();
+  
+  console.log('Favoritando:', { appid, nome, imagem });
+  
+  // Verificar se já existe
+  const jaExiste = favoritos.some(j => {
+    if (appid) return j.appid === appid;
+    return j.name.toLowerCase() === nome.toLowerCase();
   });
-
-  if (!exists) {
-    favoritos.push({ appid: safeAppid, name, header_image: headerImage || '' });
-    localStorage.setItem('favoritosSteam', JSON.stringify(favoritos));
-    console.log('Jogo salvo! Novo array:', favoritos);
-    alert('Jogo favoritado!');
-  } else {
-    alert('Este jogo já está nos favoritos.');
+  
+  if (jaExiste) {
+    alert('Este jogo já está nos favoritos!');
+    return;
   }
-
-  // redireciona para a página de favoritos
-  //window.location.href = 'favoritos.html';
+  
+  // Adicionar aos favoritos com todas as informações
+  favoritos.push({
+    appid: appid,
+    name: nome,
+    header_image: imagem || '',
+    release_date: dataLancamento || '',
+    players_recent: jogadoresRecentes || null
+  });
+  
+  localStorage.setItem('favoritosSteam', JSON.stringify(favoritos));
+  console.log('Jogo favoritado! Total:', favoritos.length);
+  
+  alert('Jogo adicionado aos favoritos!');
 }
 
-// renderizar lista de favoritos
+// Renderizar favoritos (agora mostra todas as informações)
 function renderizarFavoritos() {
   const favDiv = document.getElementById('favoritosList');
+  
   if (!favDiv) {
     console.error('Elemento favoritosList não encontrado!');
     return;
   }
-
-  console.log('Renderizando favoritos...');
+  
   const favoritos = JSON.parse(localStorage.getItem('favoritosSteam') || '[]');
-  console.log('Favoritos encontrados no localStorage:', favoritos);
+  console.log('Renderizando favoritos:', favoritos);
   
   favDiv.innerHTML = '';
-
-  if (!Array.isArray(favoritos) || favoritos.length === 0) {
+  
+  if (favoritos.length === 0) {
     favDiv.innerHTML = `
       <div class="empty-state">
         <i class="fas fa-heart"></i>
         <h3>Nenhum favorito ainda</h3>
         <p>Adicione jogos aos favoritos na página inicial para vê-los aqui.</p>
-      </div>`;
-    return;
-  }
-
-  favoritos.forEach((jogo) => {
-    const appid = Number(jogo.appid);
-    const hasValidAppid = Number.isFinite(appid) && appid > 0;
-    const imgUrl = hasValidAppid
-      ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/capsule_184x69.jpg`
-      : (jogo.header_image || 'https://placehold.co/184x69?text=Sem+Imagem');
-
-    const card = document.createElement('div');
-    card.className = 'game-card';
-    card.innerHTML = `
-      <img src="${imgUrl}" class="card-img-top" alt="${jogo.name || 'Sem nome'}" 
-           onerror="this.src='https://placehold.co/184x69?text=Sem+Imagem'">
-      <div class="card-body">
-        <h5 class="card-title">${jogo.name || 'Nome não disponível'}</h5>
-        <button class="btn btn-outline-secondary">
-          <i class="fas fa-trash me-2"></i>Remover
-        </button>
       </div>
     `;
-
-    const removeBtn = card.querySelector('button');
-    removeBtn.addEventListener('click', () => removerFavorito(hasValidAppid ? appid : null, jogo.name));
-
+    return;
+  }
+  
+  favoritos.forEach(jogo => {
+    const card = document.createElement('div');
+    card.className = 'game-card';
+    
+    const imagem = jogo.header_image || 
+                   (jogo.appid ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${jogo.appid}/capsule_616x353.jpg` : 
+                   'https://placehold.co/460x215?text=Sem+Imagem');
+    
+    const dataLancamento = jogo.release_date 
+      ? new Date(jogo.release_date).toLocaleDateString('pt-BR')
+      : 'Data indisponível';
+    
+    const jogadoresRecentes = jogo.players_recent 
+      ? `👥 Jogadores recentes: ${jogo.players_recent.toLocaleString('pt-BR')}` 
+      : '';
+    
+    card.innerHTML = `
+      <img src="${imagem}" 
+           class="card-img-top" 
+           alt="${jogo.name}"
+           onerror="this.src='https://placehold.co/460x215?text=Sem+Imagem'">
+      <div class="card-body">
+        <h5 class="card-title">${jogo.name}</h5>
+        <p>📅 ${dataLancamento}</p>
+        ${jogadoresRecentes ? `<p>${jogadoresRecentes}</p>` : ''}
+      </div>
+    `;
+    
+    // Botão de remover
+    const botaoRemover = document.createElement('button');
+    botaoRemover.className = 'btn btn-outline-secondary';
+    botaoRemover.innerHTML = '<i class="fas fa-trash me-2"></i>Remover';
+    botaoRemover.addEventListener('click', () => removerFavorito(jogo.appid, jogo.name));
+    
+    card.querySelector('.card-body').appendChild(botaoRemover);
     favDiv.appendChild(card);
   });
   
-  console.log('Favoritos renderizados:', favoritos.length);
+  console.log('Total de favoritos renderizados:', favoritos.length);
 }
 
-// remover favorito
-function removerFavorito(appid, name) {
-  const normalizedAppid = Number(appid);
-  const hasAppid = Number.isFinite(normalizedAppid) && normalizedAppid > 0;
-  console.log('Removendo favorito:', { appid: hasAppid ? normalizedAppid : null, name });
+// Remover favorito
+function removerFavorito(appid, nome) {
   let favoritos = JSON.parse(localStorage.getItem('favoritosSteam') || '[]');
-  favoritos = favoritos.filter((j) => {
-    const jApp = Number(j.appid);
-    if (hasAppid) return !(Number.isFinite(jApp) && jApp === normalizedAppid);
-    return (j.name || '').toLowerCase() !== (name || '').toLowerCase();
+  
+  console.log('Removendo favorito:', { appid, nome });
+  
+  favoritos = favoritos.filter(j => {
+    if (appid) return j.appid !== appid;
+    return j.name.toLowerCase() !== nome.toLowerCase();
   });
+  
   localStorage.setItem('favoritosSteam', JSON.stringify(favoritos));
   renderizarFavoritos();
+  
   alert('Jogo removido dos favoritos!');
 }
 
-// FUNÇÕES DE INICIALIZAÇÃO POR PÁGINA
-
-function initLoginPage() {
-  const loginBtn = document.getElementById('loginBtn');
-  const loginForm = document.querySelector('.login-form');
-
-  if (!loginBtn) return;
-
-  const handleLogin = (e) => {
+// Inicializar página de login
+function iniciarLogin() {
+  const botaoLogin = document.getElementById('loginBtn');
+  const formularioLogin = document.querySelector('.login-form');
+  
+  if (!botaoLogin) return;
+  
+  const fazerLogin = (e) => {
     e.preventDefault();
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
-
-    if (!username || !password) {
+    
+    const usuario = document.getElementById('username').value.trim();
+    const senha = document.getElementById('password').value.trim();
+    
+    if (!usuario || !senha) {
       alert('Por favor, preencha todos os campos!');
       return;
     }
-
-    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Entrando...';
-    loginBtn.disabled = true;
-
-    setTimeout(() => (window.location.href = 'home.html'), 1000);
+    
+    botaoLogin.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Entrando...';
+    botaoLogin.disabled = true;
+    
+    setTimeout(() => {
+      window.location.href = 'home.html';
+    }, 1000);
   };
-
-  loginBtn.addEventListener('click', handleLogin);
-  if (loginForm) loginForm.addEventListener('submit', handleLogin);
+  
+  botaoLogin.addEventListener('click', fazerLogin);
+  if (formularioLogin) {
+    formularioLogin.addEventListener('submit', fazerLogin);
+  }
 }
 
-function initHomePage() {
-  const searchForm = document.getElementById('searchForm');
-  const searchInput = document.getElementById('searchInput');
-  const resultsDiv = document.getElementById('results');
-  const loadingDiv = document.getElementById('loading');
-
-  if (!searchForm || !searchInput) return;
-
-  searchForm.addEventListener('submit', async (e) => {
+// Inicializar página home
+function iniciarHome() {
+  const formularioBusca = document.getElementById('searchForm');
+  const inputBusca = document.getElementById('searchInput');
+  const divResultados = document.getElementById('results');
+  const divCarregando = document.getElementById('loading');
+  
+  if (!formularioBusca || !inputBusca) return;
+  
+  formularioBusca.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const query = searchInput.value.trim();
-    if (query) await buscarJogo(query, resultsDiv, loadingDiv);
+    const termo = inputBusca.value.trim();
+    if (termo) {
+      await buscarJogos(termo, divResultados, divCarregando);
+    }
   });
 }
 
-function initFavoritosPage() {
+// Inicializar página de favoritos
+function iniciarFavoritos() {
   renderizarFavoritos();
 }
 
-// INICIALIZAÇÃO AUTOMÁTICA (detecta página atual)
-
+// Inicialização automática ao carregar a página
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOMContentLoaded - Inicializando página...');
-  // Detecta pela presença de elementos da página em vez do path
+  console.log('Página carregada, inicializando...');
+  
+  // Detectar qual página está aberta pelos elementos presentes
   if (document.getElementById('loginBtn')) {
     console.log('Inicializando página de login');
-    initLoginPage();
+    iniciarLogin();
   }
+  
   if (document.getElementById('searchForm')) {
     console.log('Inicializando página home');
-    initHomePage();
+    iniciarHome();
   }
+  
   if (document.getElementById('favoritosList')) {
     console.log('Inicializando página de favoritos');
-    initFavoritosPage();
+    iniciarFavoritos();
   }
 });
