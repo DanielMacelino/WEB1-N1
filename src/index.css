@@ -13,12 +13,99 @@
 }
 
 /* ===== ESTILOS GERAIS ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
+    min-height: 100vh;
 }
 
-/* ===== PÁGINA DE LOGIN ===== */
+/* ===== NAVBAR ===== */
+.bg-gradient-primary {
+    background: var(--gradient-primary) !important;
+}
+
+/* ===== HERO SECTION ===== */
+.hero-section {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(108, 117, 125, 0.1) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ===== GRID DE JOGOS ===== */
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 2rem 0;
+}
+
+.game-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.game-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary-color);
+}
+
+.game-card .card-img-top {
+    height: 200px;
+    width: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.game-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.game-card .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+/* ===== LOADING E ESTADOS ===== */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
+    flex-direction: column;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+}
+
+.empty-state svg {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* ===== FOOTER ===== */
+footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ===== LOGIN PAGE ===== */
 .login-bg {
     background: var(--gradient-dark);
     min-height: 100vh;
@@ -54,164 +141,6 @@ body {
     box-shadow: var(--shadow-hover);
 }
 
-.login-form .form-control {
-    border: 2px solid #e9ecef;
-    border-radius: 10px;
-    padding: 0.75rem 1rem;
-    transition: all 0.3s ease;
-}
-
-.login-form .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-}
-
-.login-form .btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-.login-form .btn {
-    transition: all 0.3s ease;
-}
-
-.login-form .btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
-}
-
-/* ===== NAVBAR ===== */
-.bg-gradient-primary {
-    background: var(--gradient-primary) !important;
-}
-
-.navbar-brand {
-    font-size: 1.5rem;
-    font-weight: 700;
-}
-
-/* ===== HERO SECTION ===== */
-.hero-section {
-    background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(108, 117, 125, 0.1) 100%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.search-form .input-group {
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.search-form .input-group-text {
-    border: none;
-    background: var(--primary-color);
-}
-
-.search-form .form-control {
-    border: 2px solid #e9ecef;
-    border-radius: 0;
-    padding: 1rem;
-    font-size: 1.1rem;
-}
-
-.search-form .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: none;
-}
-
-.search-form .btn {
-    border-radius: 0 10px 10px 0;
-    padding: 1rem 2rem;
-    font-weight: 600;
-}
-
-/* ===== GRID DE JOGOS ===== */
-.games-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2rem;
-    padding: 2rem 0;
-}
-
-.game-card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    position: relative;
-}
-
-.game-card:hover {
-    transform: translateY(-10px);
-    box-shadow: var(--shadow-hover);
-    border-color: var(--primary-color);
-}
-
-.game-card .card-img-top {
-    height: 120px;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
-
-.game-card:hover .card-img-top {
-    transform: scale(1.05);
-}
-
-.game-card .card-body {
-    padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.game-card .card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: white;
-}
-
-.game-card .btn {
-    border-radius: 25px;
-    padding: 0.5rem 1.5rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.game-card .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-/* ===== LOADING E ESTADOS ===== */
-.loading-spinner {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 3rem;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 3rem;
-    color: #6c757d;
-}
-
-.hidden {
-    display: none !important;
-}
-
-.empty-state i {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-    opacity: 0.5;
-}
-
-/* ===== FOOTER ===== */
-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.2) !important;
-}
-
 /* ===== RESPONSIVIDADE ===== */
 @media (max-width: 768px) {
     .login-container {
@@ -228,24 +157,9 @@ footer {
     .hero-section h1 {
         font-size: 2rem;
     }
-    
-    .search-form .input-group {
-        flex-direction: column; /* botão e campo empilhados no mobile */
-    }
-    
-    .search-form .input-group-text,
-    .search-form .form-control,
-    .search-form .btn {
-        border-radius: 10px !important;
-        margin-bottom: 0.5rem;
-    }
 }
 
 @media (max-width: 576px) {
-    .navbar-brand {
-        font-size: 1.2rem;
-    }
-    
     .hero-section {
         padding: 2rem 0 !important;
     }
@@ -275,13 +189,6 @@ footer {
     animation: fadeInUp 0.6s ease forwards;
 }
 
-.game-card:nth-child(1) { animation-delay: 0.1s; }
-.game-card:nth-child(2) { animation-delay: 0.2s; }
-.game-card:nth-child(3) { animation-delay: 0.3s; }
-.game-card:nth-child(4) { animation-delay: 0.4s; }
-.game-card:nth-child(5) { animation-delay: 0.5s; }
-.game-card:nth-child(6) { animation-delay: 0.6s; }
-
 /* ===== SCROLLBAR PERSONALIZADA ===== */
 ::-webkit-scrollbar {
     width: 8px;
@@ -299,3 +206,4 @@ footer {
 ::-webkit-scrollbar-thumb:hover {
     background: #b50bd7;
 }
+
