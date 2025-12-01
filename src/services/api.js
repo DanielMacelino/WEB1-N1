@@ -71,13 +71,42 @@ export async function buscarJogo(query) {
         const appid = item.id || item.appid || item.app_id;
         const name = item.name || 'Nome não disponível';
         
+        // Formatar preço
+        const price = item.price || 0;
+        const finalPrice = item.final_price || price;
+        const discountPercent = item.discount_percent || 0;
+        const currency = item.currency || 'BRL';
+        const isFree = item.is_free || false;
+        
+        // Formatar preço para exibição
+        const formatPrice = (priceInCents) => {
+          if (isFree) return 'Grátis';
+          const priceInReais = priceInCents / 100;
+          return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: currency
+          }).format(priceInReais);
+        };
+        
         return {
           steam_appid: appid,
           name: name,
           header_image: item.tiny_image || item.capsule_image || item.header_image || 
                        `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/capsule_616x353.jpg`,
-          release_date: item.release_date || '',
+          release_date: item.release_date || item.released || '',
           players_recent: null,
+          // Novos campos
+          price: price,
+          final_price: finalPrice,
+          price_formatted: formatPrice(finalPrice),
+          original_price_formatted: discountPercent > 0 ? formatPrice(price) : null,
+          discount_percent: discountPercent,
+          is_free: isFree,
+          currency: currency,
+          platforms: item.platforms || {},
+          metacritic: item.metacritic || null,
+          recommendations: item.recommendations || null,
+          controller_support: item.controller_support || null,
         };
       });
 
