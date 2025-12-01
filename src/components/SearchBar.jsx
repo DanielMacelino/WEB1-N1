@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Form, InputGroup, Button } from 'react-bootstrap';
-import { FaSearch } from 'react-icons/fa';
+import { Form, InputGroup, Button, Badge } from 'react-bootstrap';
+import { FaSearch, FaSteam } from 'react-icons/fa';
+import { GiJoystick } from 'react-icons/gi';
 
 export default function SearchBar({ onSearch, loading = false }) {
   const [query, setQuery] = useState('');
@@ -13,23 +14,49 @@ export default function SearchBar({ onSearch, loading = false }) {
   };
 
   return (
-    <Form onSubmit={handleSubmit} className="search-form">
-      <InputGroup size="lg">
-        <InputGroup.Text className="bg-primary text-white">
-          <FaSearch />
-        </InputGroup.Text>
-        <Form.Control
-          type="search"
-          placeholder="Digite o nome do jogo..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          disabled={loading}
-        />
-        <Button variant="primary" type="submit" disabled={loading}>
-          Buscar
-        </Button>
-      </InputGroup>
-    </Form>
+    <div className="w-100">
+      <div className="text-center mb-3">
+        <Badge bg="primary" className="p-2 mb-2">
+          <GiJoystick className="me-2" size={20} />
+          <FaSteam className="me-2" />
+          Buscar Jogos da Steam
+        </Badge>
+      </div>
+      <Form onSubmit={handleSubmit} className="search-form">
+        <InputGroup size="lg" className="shadow-lg">
+          <InputGroup.Text className="bg-danger text-white border-danger">
+            <FaSearch size={20} />
+          </InputGroup.Text>
+          <Form.Control
+            type="search"
+            placeholder="Digite o nome do jogo (ex: Counter-Strike, Dota 2, GTA V)..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            disabled={loading}
+            className="border-danger"
+            style={{ fontSize: '1.1rem' }}
+          />
+          <Button 
+            variant="danger" 
+            type="submit" 
+            disabled={loading}
+            className="px-4"
+          >
+            {loading ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Buscando...
+              </>
+            ) : (
+              <>
+                <FaSearch className="me-2" />
+                Buscar
+              </>
+            )}
+          </Button>
+        </InputGroup>
+      </Form>
+    </div>
   );
 }
 

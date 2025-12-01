@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Form, Button, Alert } from 'react-bootstrap';
-import { FaUser, FaLock, FaSignInAlt, FaSpinner, FaInfoCircle } from 'react-icons/fa';
+import { Form, Button, Alert, Badge, InputGroup } from 'react-bootstrap';
+import { FaUser, FaLock, FaSignInAlt, FaSpinner, FaInfoCircle, FaSteam } from 'react-icons/fa';
+import { GiGamepad } from 'react-icons/gi';
 
 export default function LoginForm({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -27,54 +28,58 @@ export default function LoginForm({ onLogin }) {
   };
 
   return (
-    <div className="login-container">
-      <div className="text-center mb-4">
-        <h2 className="fw-bold text-dark">Steam Games</h2>
-        <p className="text-muted">Descubra e gerencie seus jogos favoritos</p>
-      </div>
-
+    <div className="login-container bg-light rounded shadow-lg p-4" style={{ position: 'relative', zIndex: 2 }}>
       <Form onSubmit={handleSubmit} className="login-form">
         {error && (
           <Alert variant="danger" className="mb-3">
+            <GiGamepad className="me-2" />
             {error}
           </Alert>
         )}
 
         <Form.Group className="mb-3">
-          <Form.Label>
-            <FaUser className="me-2" />
+          <Form.Label className="fw-bold text-dark">
+            <FaUser className="me-2 text-primary" />
             Usuário
           </Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Digite seu usuário"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            size="lg"
-          />
+          <InputGroup size="lg">
+            <InputGroup.Text className="bg-primary text-white">
+              <FaUser />
+            </InputGroup.Text>
+            <Form.Control
+              type="text"
+              placeholder="Digite seu usuário"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </InputGroup>
         </Form.Group>
 
         <Form.Group className="mb-4">
-          <Form.Label>
-            <FaLock className="me-2" />
+          <Form.Label className="fw-bold text-dark">
+            <FaLock className="me-2 text-danger" />
             Senha
           </Form.Label>
-          <Form.Control
-            type="password"
-            placeholder="Digite sua senha"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            size="lg"
-          />
+          <InputGroup size="lg">
+            <InputGroup.Text className="bg-danger text-white">
+              <FaLock />
+            </InputGroup.Text>
+            <Form.Control
+              type="password"
+              placeholder="Digite sua senha"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </InputGroup>
         </Form.Group>
 
         <Button
           type="submit"
-          variant="primary"
+          variant="danger"
           size="lg"
-          className="w-100 mb-3"
+          className="w-100 mb-3 fw-bold"
           disabled={loading}
         >
           {loading ? (
@@ -85,16 +90,22 @@ export default function LoginForm({ onLogin }) {
           ) : (
             <>
               <FaSignInAlt className="me-2" />
-              Entrar
+              Entrar no GameHub
             </>
           )}
         </Button>
 
         <div className="text-center">
-          <small className="text-muted">
+          <Badge bg="info" className="p-2">
             <FaInfoCircle className="me-1" />
-            Apenas demonstração - qualquer usuário/senha funciona
-          </small>
+            <small>Apenas demonstração - qualquer usuário/senha funciona</small>
+          </Badge>
+          <div className="mt-2">
+            <Badge bg="primary" className="p-2">
+              <FaSteam className="me-1" />
+              <small>Powered by Steam</small>
+            </Badge>
+          </div>
         </div>
       </Form>
     </div>

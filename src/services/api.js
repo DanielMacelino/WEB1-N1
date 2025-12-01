@@ -10,6 +10,15 @@ const jogosPopulares = [
   { steam_appid: 1086940, name: 'Baldur\'s Gate 3', header_image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1086940/capsule_616x353.jpg' },
 ];
 
+// Buscar jogos recomendados (jogos populares)
+export async function buscarJogosRecomendados() {
+  return jogosPopulares.slice(0, 6).map(jogo => ({
+    ...jogo,
+    release_date: '',
+    players_recent: null,
+  }));
+}
+
 // Buscar jogos usando a API pública da Steam Store
 export async function buscarJogo(query) {
   if (!query || query.trim().length === 0) {
